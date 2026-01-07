@@ -2,49 +2,48 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chel-Love | Главная</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <style>
-        :root { --bg: #0f172a; --text: #ffffff; --glass-bg: rgba(255, 255, 255, 0.03); --border: rgba(255, 255, 255, 0.1); }
-        body.light-mode { --bg: #f1f5f9; --text: #0f172a; --glass-bg: rgba(255, 255, 255, 0.7); --border: rgba(15, 23, 42, 0.1); }
-        body { background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; font-family: 'Inter', sans-serif; min-height: 100vh; overflow: hidden; }
-        .glass { background: var(--glass-bg); backdrop-filter: blur(15px); border: 1px solid var(--border); box-shadow: 0 8px 32px rgba(0,0,0,0.37); }
-        .neon-text { text-shadow: 0 0 10px rgba(96, 165, 250, 0.5); }
-        .gradient-btn { background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); transition: 0.3s; color: white; }
-        .gradient-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4); }
+        :root { --bg: #0f172a; --text: #ffffff; --glass: rgba(255, 255, 255, 0.03); --border: rgba(255, 255, 255, 0.1); }
+        body.light-mode { --bg: #f1f5f9; --text: #0f172a; --glass: rgba(255, 255, 255, 0.7); --border: rgba(0,0,0,0.1); }
+        body { background: var(--bg); color: var(--text); transition: 0.3s; font-family: 'Inter', sans-serif; min-height: 100vh; }
+        .glass { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid var(--border); }
+        .gradient-btn { background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); color: white; }
     </style>
 </head>
-<body class="flex flex-col">
-    <header class="glass sticky top-0 z-50 p-5 flex justify-between items-center px-12">
-        <button onclick="toggleTheme()" class="p-2 rounded-full glass hover:scale-110 transition" id="themeBtn">🌙</button>
-        <div class="text-3xl font-black tracking-widest neon-text uppercase">Chel<span class="text-blue-400">Love</span></div>
-        <div id="nav" class="flex items-center gap-6"></div>
+<body class="flex flex-col overflow-x-hidden">
+    <header class="glass sticky top-0 z-50 p-4 flex justify-between items-center px-6 md:px-12">
+        <button onclick="toggleTheme()" class="p-2 rounded-full glass" id="themeBtn">🌙</button>
+        <div class="text-xl md:text-2xl font-black tracking-widest uppercase">Chel<span class="text-blue-400">Love</span></div>
+        <div id="nav"></div>
     </header>
 
-    <main class="flex-1 flex flex-col items-center justify-center text-center p-4 relative">
-        <div class="absolute w-96 h-96 bg-blue-500/10 rounded-full blur-[120px] top-1/4 left-1/4 animate-pulse"></div>
-        <div class="animate__animated animate__fadeInUp">
-            <h1 class="text-7xl font-black mb-6 tracking-tighter uppercase">Челябинск<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Знакомится тут</span></h1>
-            <p class="text-gray-400 text-xl max-w-2xl mx-auto mb-12">Твой город — твои люди. Найди общение без лишних серверов.</p>
+    <main class="flex-1 flex flex-col items-center justify-center text-center p-6 relative">
+        <div class="animate__animated animate__fadeInUp w-full max-w-4xl">
+            <h1 class="text-4xl md:text-7xl font-black mb-6 tracking-tighter uppercase leading-tight">Челябинск<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 text-5xl md:text-8xl">НА СВЯЗИ</span></h1>
+            <p class="text-gray-400 text-lg md:text-xl mb-10 max-w-lg mx-auto">Найди своих людей в родном городе. Безопасно, быстро, по-нашему.</p>
         </div>
     </main>
 
-    <div id="authModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-[100] p-4">
-        <div class="glass p-10 rounded-[2.5rem] w-full max-w-md animate__animated animate__zoomIn">
-            <h2 id="atitle" class="text-4xl font-bold mb-8 text-center">Вход</h2>
+    <div id="authModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+        <div class="glass p-8 md:p-10 rounded-[2rem] w-full max-w-md animate__animated animate__zoomIn">
+            <h2 id="atitle" class="text-3xl font-bold mb-6 text-center">Вход</h2>
             <div class="space-y-4">
-                <input type="text" id="u" placeholder="Логин" class="w-full bg-white/5 p-4 rounded-2xl outline-none border border-white/10 focus:border-blue-500 text-white">
-                <input type="password" id="p" placeholder="Пароль" class="w-full bg-white/5 p-4 rounded-2xl outline-none border border-white/10 focus:border-blue-500 text-white">
-                <button id="authBtn" class="w-full gradient-btn py-4 rounded-2xl font-bold text-xl mt-4">Погнали</button>
-                <button id="modeBtn" class="w-full text-gray-500 hover:text-white transition text-sm">Нет аккаунта? Регистрация</button>
+                <input type="text" id="u" placeholder="Логин" class="w-full bg-white/5 p-4 rounded-2xl outline-none border border-white/10 text-white">
+                <input type="password" id="p" placeholder="Пароль (от 8 символов)" class="w-full bg-white/5 p-4 rounded-2xl outline-none border border-white/10 text-white">
+                <button id="authBtn" class="w-full gradient-btn py-4 rounded-2xl font-bold text-lg mt-2 transition active:scale-95">Продолжить</button>
+                <button id="modeBtn" class="w-full text-gray-500 text-sm">Нет аккаунта? Регистрация</button>
+                <button onclick="document.getElementById('authModal').classList.add('hidden')" class="w-full text-xs text-gray-600 uppercase tracking-widest mt-2">Закрыть</button>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-        import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCTIwDY2Kjzeo5c3X7gyy89mOhHs0RlJyw",
@@ -75,35 +74,41 @@
 
         document.getElementById('modeBtn').onclick = window.toggleMode;
         document.getElementById('authBtn').onclick = async () => {
-            const user = document.getElementById('u').value;
+            const user = document.getElementById('u').value.trim().toLowerCase();
             const pass = document.getElementById('p').value;
-            if (!user || !pass) return alert("Заполни поля");
+
+            if (!user || !pass) return alert("Заполни поля!");
+            
+            // ПРОВЕРКА ПАРОЛЯ ПРИ РЕГИСТРАЦИИ
+            if (isReg && pass.length < 8) return alert("Пароль должен быть не менее 8 символов!");
 
             const userRef = ref(db, 'users/' + user);
             const snapshot = await get(userRef);
 
             if (isReg) {
-                if (snapshot.exists()) return alert("Логин занят");
+                if (snapshot.exists()) return alert("Логин занят!");
                 await set(userRef, { user, pass });
-                alert("Готово! Теперь входи");
+                alert("Успешно! Теперь войдите.");
                 window.toggleMode();
             } else {
                 if (snapshot.exists() && snapshot.val().pass === pass) {
                     localStorage.setItem('currentUser', JSON.stringify(snapshot.val()));
                     location.reload();
-                } else alert("Неверно!");
+                } else alert("Неверные данные!");
             }
         };
 
-        // Init
-        if (localStorage.getItem('currentUser')) {
-            document.getElementById('nav').innerHTML = `
-                <a href="dating.html" class="gradient-btn px-8 py-3 rounded-xl font-bold">ЛЕНТА</a>
-                <button onclick="localStorage.clear(); location.reload()" class="text-red-400">ВЫЙТИ</button>`;
+        const nav = document.getElementById('nav');
+        const curr = localStorage.getItem('currentUser');
+        if (curr) {
+            nav.innerHTML = `<div class="flex gap-3">
+                <a href="dating.html" class="gradient-btn px-5 py-2 rounded-xl font-bold text-sm">ЛЕНТА</a>
+                <button onclick="localStorage.clear(); location.reload()" class="text-gray-500 text-sm">ВЫХОД</button>
+            </div>`;
         } else {
-            document.getElementById('nav').innerHTML = `<button onclick="document.getElementById('authModal').classList.remove('hidden')" class="gradient-btn px-8 py-3 rounded-xl font-bold">ВОЙТИ</button>`;
+            nav.innerHTML = `<button onclick="document.getElementById('authModal').classList.remove('hidden')" class="gradient-btn px-6 py-2 rounded-xl font-bold">ВОЙТИ</button>`;
         }
-        
+
         if (localStorage.getItem('theme') === 'light') {
             document.body.classList.add('light-mode');
             document.getElementById('themeBtn').innerText = '☀️';
