@@ -24,7 +24,7 @@
     <main class="flex-1 flex flex-col items-center justify-center text-center p-6 relative">
         <div class="animate__animated animate__fadeInUp w-full max-w-4xl">
             <h1 class="text-4xl md:text-7xl font-black mb-6 tracking-tighter uppercase leading-tight">Челябинск<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 text-5xl md:text-8xl">НА СВЯЗИ</span></h1>
-            <p class="text-gray-400 text-lg md:text-xl mb-10 max-w-lg mx-auto">Найди своих людей в родном городе. Безопасно, быстро, по-нашему.</p>
+            <p class="text-gray-400 text-lg md:text-xl mb-10 max-w-lg mx-auto text-balance">Найди своих людей в родном городе. Безопасно, быстро, по-нашему.</p>
         </div>
     </main>
 
@@ -57,7 +57,6 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-
         let isReg = false;
 
         window.toggleMode = () => {
@@ -76,11 +75,8 @@
         document.getElementById('authBtn').onclick = async () => {
             const user = document.getElementById('u').value.trim().toLowerCase();
             const pass = document.getElementById('p').value;
-
             if (!user || !pass) return alert("Заполни поля!");
-            
-            // ПРОВЕРКА ПАРОЛЯ ПРИ РЕГИСТРАЦИИ
-            if (isReg && pass.length < 8) return alert("Пароль должен быть не менее 8 символов!");
+            if (isReg && pass.length < 8) return alert("Пароль от 8 символов!");
 
             const userRef = ref(db, 'users/' + user);
             const snapshot = await get(userRef);
@@ -88,31 +84,24 @@
             if (isReg) {
                 if (snapshot.exists()) return alert("Логин занят!");
                 await set(userRef, { user, pass });
-                alert("Успешно! Теперь войдите.");
+                alert("Готово! Теперь войди.");
                 window.toggleMode();
             } else {
                 if (snapshot.exists() && snapshot.val().pass === pass) {
-                    localStorage.setItem('currentUser', JSON.stringify(snapshot.val()));
+                    localStorage.setItem('currentUser', JSON.stringify({ user: user }));
                     location.reload();
-                } else alert("Неверные данные!");
+                } else alert("Неверно!");
             }
         };
 
         const nav = document.getElementById('nav');
         const curr = localStorage.getItem('currentUser');
         if (curr) {
-            nav.innerHTML = `<div class="flex gap-3">
-                <a href="dating.html" class="gradient-btn px-5 py-2 rounded-xl font-bold text-sm">ЛЕНТА</a>
-                <button onclick="localStorage.clear(); location.reload()" class="text-gray-500 text-sm">ВЫХОД</button>
-            </div>`;
+            nav.innerHTML = `<div class="flex gap-3"><a href="dating.html" class="gradient-btn px-5 py-2 rounded-xl font-bold text-sm">ЛЕНТА</a><button onclick="localStorage.clear(); location.reload()" class="text-gray-500 text-xs">ВЫХОД</button></div>`;
         } else {
             nav.innerHTML = `<button onclick="document.getElementById('authModal').classList.remove('hidden')" class="gradient-btn px-6 py-2 rounded-xl font-bold">ВОЙТИ</button>`;
         }
-
-        if (localStorage.getItem('theme') === 'light') {
-            document.body.classList.add('light-mode');
-            document.getElementById('themeBtn').innerText = '☀️';
-        }
+        if (localStorage.getItem('theme') === 'light') { document.body.classList.add('light-mode'); document.getElementById('themeBtn').innerText = '☀️'; }
     </script>
 </body>
 </html>
