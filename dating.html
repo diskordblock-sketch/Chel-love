@@ -5,34 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Лента | Chel-Love</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <style>
         :root { --bg: #0f172a; --text: #ffffff; --card: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1); }
         body.light-mode { --bg: #f1f5f9; --text: #0f172a; --card: #ffffff; --border: rgba(0,0,0,0.1); }
-        body { background: var(--bg); color: var(--text); transition: 0.3s; padding-bottom: 100px; font-family: sans-serif; }
+        body { background: var(--bg); color: var(--text); transition: 0.3s; padding-bottom: 100px; }
         .glass { background: var(--card); backdrop-filter: blur(10px); border: 1px solid var(--border); }
         .fab { background: #2563eb; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4); }
+        .skeleton { background: linear-gradient(90deg, var(--card) 25%, var(--border) 50%, var(--card) 75%); background-size: 200% 100%; animation: loading 1.5s infinite; }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     </style>
 </head>
 <body class="overflow-x-hidden">
     <header class="p-4 flex justify-between items-center glass sticky top-0 z-50">
         <a href="index.html" class="text-sm font-bold opacity-70">← НАЗАД</a>
-        <div class="text-blue-500 font-black text-lg">CHEL<span class="text-white ml-1 font-light opacity-50">LIVE</span></div>
+        <div class="text-blue-500 font-black text-lg tracking-tighter">CHEL<span class="text-white ml-1 opacity-50 uppercase">Live</span></div>
         <button onclick="toggleTheme()" class="p-2 rounded-full glass" id="themeBtn">🌙</button>
     </header>
 
-    <main id="feed" class="max-w-xl mx-auto p-4 space-y-6 mt-4"></main>
+    <main id="feed" class="max-w-xl mx-auto p-4 space-y-6 mt-4">
+        <div id="loader"><div class="glass rounded-[2rem] h-[400px] skeleton mb-6"></div><div class="glass rounded-[2rem] h-[400px] skeleton"></div></div>
+    </main>
 
-    <button onclick="openModal()" class="fixed bottom-6 left-1/2 -translate-x-1/2 fab text-white px-8 py-4 rounded-2xl font-bold z-40 flex items-center gap-2 active:scale-95 transition">
+    <button id="mainActionBtn" onclick="openModal()" class="fixed bottom-6 left-1/2 -translate-x-1/2 fab text-white px-8 py-4 rounded-2xl font-bold z-40 flex items-center gap-2 active:scale-95 transition">
         <span>📝</span> МОЯ АНКЕТА
     </button>
 
-    <div id="m" class="hidden fixed inset-0 bg-black/95 z-[100] flex items-center justify-center p-4">
-        <div class="bg-slate-900 p-6 md:p-8 rounded-[2.5rem] w-full max-w-sm border border-white/10">
-            <h2 class="text-xl font-bold mb-6 text-blue-400">Настройка анкеты</h2>
-            <div class="space-y-3">
+    <div id="m" class="hidden fixed inset-0 bg-black/95 z-[100] flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-slate-900 p-6 rounded-[2.5rem] w-full max-w-sm border border-white/10 my-auto">
+            <h2 class="text-xl font-bold mb-6 text-blue-400 text-center">Ваша анкета</h2>
+            <div class="space-y-4">
                 <input type="text" id="postName" placeholder="Имя" class="w-full bg-white/5 p-4 rounded-2xl outline-none border border-white/10 text-white text-sm">
                 <input type="number" id="age" placeholder="Возраст" class="w-full bg-white/5 p-4 rounded-2xl outline-none border border-white/10 text-white text-sm">
-                <input type="text" id="photo" placeholder="Ссылка на фото (URL)" class="w-full bg-white/5 p-4 rounded-2xl outline-none border border-white/10 text-white text-sm">
+                <label class="block">
+                    <span class="text-[10px] text-gray-500 ml-2 uppercase tracking-widest">Фото из галереи (макс 500кб)</span>
+                    <input type="file" id="photoFile" accept="image/*" class="w-full bg-white/5 p-3 rounded-2xl border border-white/10 text-white text-xs mt-1">
+                </label>
                 <input type="text" id="tg" placeholder="Telegram (без @)" class="w-full bg-white/5 p-4 rounded-2xl outline-none border border-white/10 text-white text-sm">
                 <textarea id="bio" placeholder="О себе..." class="w-full bg-white/5 p-4 rounded-2xl outline-none border border-white/10 text-white h-24 text-sm"></textarea>
             </div>
@@ -43,7 +51,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-        import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+        import { getDatabase, ref, set, get, onValue, update, increment } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCTIwDY2Kjzeo5c3X7gyy89mOhHs0RlJyw",
@@ -55,6 +63,7 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
         window.toggleTheme = () => {
             const isLight = document.body.classList.toggle('light-mode');
@@ -62,66 +71,86 @@
             document.getElementById('themeBtn').innerText = isLight ? '☀️' : '🌙';
         };
 
-        // Загрузка всей ленты
-        const feed = document.getElementById('feed');
+        window.like = async (ownerId) => {
+            if(!currentUser) return alert("Войди!");
+            const likedKey = `liked_${ownerId}_by_${currentUser.user}`;
+            if(localStorage.getItem(likedKey)) return alert("Вы уже лайкнули!");
+            
+            await update(ref(db, 'posts/' + ownerId), { likes: increment(1) });
+            localStorage.setItem(likedKey, true);
+        };
+
         onValue(ref(db, 'posts'), (snapshot) => {
             const data = snapshot.val();
-            if (!data) return feed.innerHTML = "<div class='text-center opacity-30 mt-10'>Здесь пока никого нет...</div>";
+            const feed = document.getElementById('feed');
+            if (!data) return feed.innerHTML = "<div class='text-center opacity-30 mt-10'>Пока пусто...</div>";
             
-            const posts = Object.values(data).reverse();
+            const posts = Object.values(data).sort((a, b) => (b.likes || 0) - (a.likes || 0));
             feed.innerHTML = posts.map(p => `
-                <div class="glass rounded-[2rem] overflow-hidden shadow-xl animate__animated animate__fadeInUp">
-                    <img src="${p.photo || 'https://via.placeholder.com/500'}" class="w-full h-[450px] object-cover" onerror="this.src='https://via.placeholder.com/500?text=Нет+фото'">
+                <div class="glass rounded-[2.5rem] overflow-hidden shadow-xl animate__animated animate__fadeIn">
+                    <div class="relative">
+                        <img src="${p.photo || 'https://via.placeholder.com/500'}" class="w-full h-[450px] object-cover" onerror="this.src='https://via.placeholder.com/500?text=Ошибка+фото'">
+                        <button onclick="like('${p.owner}')" class="absolute bottom-4 right-4 bg-black/40 backdrop-blur-md text-white px-5 py-2 rounded-full font-bold flex items-center gap-2 border border-white/20 active:scale-125 transition">
+                            ❤️ <span>${p.likes || 0}</span>
+                        </button>
+                    </div>
                     <div class="p-6">
-                        <div class="flex justify-between items-center">
-                            <h3 class="text-2xl font-bold">${p.name}, ${p.age}</h3>
-                            <span class="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-1 rounded-md uppercase font-bold tracking-widest">Челябинск</span>
-                        </div>
-                        <p class="text-gray-400 my-4 text-sm leading-relaxed">${p.text}</p>
-                        <a href="https://t.me/${p.contact}" target="_blank" class="block w-full fab text-white py-4 rounded-2xl font-bold text-center active:opacity-80">✈️ НАПИСАТЬ</a>
+                        <h3 class="text-2xl font-bold">${p.name}, ${p.age}</h3>
+                        <p class="text-gray-400 my-3 text-sm leading-relaxed">${p.text}</p>
+                        <a href="https://t.me/${p.contact}" target="_blank" class="block w-full fab text-white py-4 rounded-2xl font-bold text-center active:opacity-70">НАПИСАТЬ</a>
                     </div>
                 </div>
             `).join('');
         });
 
-        // Открытие модалки с предзаполнением данных
         window.openModal = async () => {
-            const user = JSON.parse(localStorage.getItem('currentUser'));
-            if(!user) return alert("Войди в аккаунт!");
-            
-            // Проверяем, есть ли уже анкета у юзера, чтобы подставить данные
-            const postRef = ref(db, 'posts/' + user.user);
-            const snap = await get(postRef);
-            if(snap.exists()) {
-                const p = snap.val();
-                document.getElementById('postName').value = p.name;
-                document.getElementById('age').value = p.age;
-                document.getElementById('photo').value = p.photo;
-                document.getElementById('tg').value = p.contact;
-                document.getElementById('bio').value = p.text;
+            if(!currentUser) return alert("Войди!");
+            const snap = await get(ref(db, 'posts/' + currentUser.user));
+            if(snap.exists()){
+                const d = snap.val();
+                document.getElementById('postName').value = d.name || '';
+                document.getElementById('age').value = d.age || '';
+                document.getElementById('tg').value = d.contact || '';
+                document.getElementById('bio').value = d.text || '';
             }
             document.getElementById('m').classList.remove('hidden');
         };
 
         document.getElementById('sendBtn').onclick = async () => {
-            const user = JSON.parse(localStorage.getItem('currentUser'));
+            const btn = document.getElementById('sendBtn');
+            const file = document.getElementById('photoFile').files[0];
             const name = document.getElementById('postName').value.trim();
             const age = document.getElementById('age').value;
-            const photo = document.getElementById('photo').value.trim();
-            const contact = document.getElementById('tg').value.trim().replace('@', '');
-            const text = document.getElementById('bio').value.trim();
+            const tg = document.getElementById('tg').value.trim().replace('@', '');
+            const bio = document.getElementById('bio').value.trim();
 
-            if(!name || !age || !contact) return alert("Заполни имя, возраст и телеграм!");
+            if(!name || !age || !tg) return alert("Заполни данные!");
 
-            // СОХРАНЯЕМ ПОД КЛЮЧОМ ЛОГИНА (ОДИН ЮЗЕР = ОДНА АНКЕТА)
-            await set(ref(db, 'posts/' + user.user), { name, age, photo, contact, text, owner: user.user });
+            btn.disabled = true; btn.innerText = "ЗАГРУЗКА...";
+
+            let photoBase64 = "";
+            if(file) {
+                if(file.size > 600000) { alert("Слишком тяжелое фото! Выбери другое."); btn.disabled = false; return; }
+                photoBase64 = await new Promise(res => {
+                    const r = new FileReader(); r.readAsDataURL(file); r.onload = () => res(r.result);
+                });
+            }
+
+            const postRef = ref(db, 'posts/' + currentUser.user);
+            const oldSnap = await get(postRef);
+            const oldData = oldSnap.exists() ? oldSnap.val() : { likes: 0 };
+
+            await set(postRef, {
+                name, age, contact: tg, text: bio, owner: currentUser.user,
+                photo: photoBase64 || oldData.photo || "",
+                likes: oldData.likes || 0
+            });
+
+            btn.disabled = false; btn.innerText = "СОХРАНИТЬ";
             document.getElementById('m').classList.add('hidden');
         };
 
-        if (localStorage.getItem('theme') === 'light') {
-            document.body.classList.add('light-mode');
-            document.getElementById('themeBtn').innerText = '☀️';
-        }
+        if (localStorage.getItem('theme') === 'light') { document.body.classList.add('light-mode'); document.getElementById('themeBtn').innerText = '☀️'; }
     </script>
 </body>
 </html>
